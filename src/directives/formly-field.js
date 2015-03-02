@@ -6,7 +6,7 @@ module.exports = ngModule => {
   formlyField.tests = ON_TEST ? require('./formly-field.test')(ngModule) : null;
 
   function formlyField($http, $q, $compile, $templateCache, formlyConfig, formlyValidationMessages, formlyApiCheck,
-                       formlyUtil, formlyUsability, formlyWarn) {
+                       formlyUtil, formlyUsability, formlyWarn, formlyTemplateCache) {
     return {
       restrict: 'AE',
       transclude: true,
@@ -106,7 +106,7 @@ module.exports = ngModule => {
             return;
           }
           var stopWaitingForDestroy;
-          var maxTime = 2000;
+          var maxTime = 22000;
           var intervalTime = 5;
           var iterations = 0;
           var interval = setInterval(function() {
@@ -158,9 +158,9 @@ module.exports = ngModule => {
 
         function addValidationMessages(options) {
           options.validation.messages = options.validation.messages || {};
-          angular.forEach(formlyValidationMessages.messages, function (expression, name) {
+          angular.forEach(formlyValidationMessages.messages, function(expression, name) {
             if (!options.validation.messages[name]) {
-              options.validation.messages[name] = function (viewValue, modelValue, scope) {
+              options.validation.messages[name] = function(viewValue, modelValue, scope) {
                 return formlyUtil.formlyEval(scope, expression, modelValue, viewValue);
               };
             }
@@ -179,29 +179,41 @@ module.exports = ngModule => {
         var type = scope.options.type && formlyConfig.getType(scope.options.type);
         var args = arguments;
         var thusly = this;
-        getFieldTemplate(scope.options)
-          .then(runManipulators(formlyConfig.templateManipulators.preWrapper))
-          .then(transcludeInWrappers(scope.options))
-          .then(runManipulators(formlyConfig.templateManipulators.postWrapper))
-          .then(setElementTemplate)
-          .catch(error => {
-            formlyWarn(
-              'there-was-a-problem-setting-the-template-for-this-field',
-              'There was a problem setting the template for this field ',
-              scope.options,
-              error
-            );
-          });
+        if (formlyTemplateCache.get(scope.id)) {
+          console.log('using template cache');
+          $q.when(formlyTemplateCache.get(scope.id))
+            .then(setElementTemplate);
+        } else {
+          console.log('not using template cache');
+          getFieldTemplate(scope.options)
+            .then(runManipulators(formlyConfig.templateManipulators.preWrapper))
+            .then(transcludeInWrappers(scope.options))
+            .then(runManipulators(formlyConfig.templateManipulators.postWrapper))
+            .then(setElementTemplate)
+            .then(addToCache)
+            .catch(error => {
+              formlyWarn(
+                'there-was-a-problem-setting-the-template-for-this-field',
+                'There was a problem setting the template for this field ',
+                scope.options,
+                error
+              );
+            });
+        }
 
-        function setElementTemplate(templateEl) {
-          el.html(asHtml(templateEl));
-          $compile(el.contents())(scope);
+        function setElementTemplate(template) {
+          el.replaceWith($compile(template)(scope));
           if (type && type.link) {
             type.link.apply(thusly, args);
           }
           if (scope.options.link) {
             scope.options.link.apply(thusly, args);
           }
+          return template;
+        }
+
+        function addToCache(template) {
+          formlyTemplateCache.add(scope.id, template);
         }
 
         function runManipulators(manipulators) {

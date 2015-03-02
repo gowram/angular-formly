@@ -95,6 +95,10 @@ you know that something is wrong with the wrappers if there is.
 - Make sure that there's not an issue in the template itself. Angular will throw a parse error if this is the case, so
 you should know if this is the issue.
 
+# Attempting to override template in cache
+
+Please file a bug to ask me to update this with something more helpful...
+
 # Notes
 
 It is recommended to disable warnings in production using `formlyConfigProvider.disableWarnings = true`. Note: This will

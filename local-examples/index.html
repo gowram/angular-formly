@@ -10,12 +10,13 @@
 <div class="jumbotron" style="text-align:center;">
   <h1>Manual tests for formly</h1>
 </div>
-<div class="container ng-cloak">
+<div class="container ng-cloak" ng-init="show=false">
+  <button class="btn btn-info" ng-click="show=!show">Toggle</button>
   <!--<form name="vm.realForm">-->
     <!--<formly-form model="vm.user" fields="vm.realFields" form="vm.realForm"></formly-form>-->
   <!--</form>-->
-  <form name="vm.form">
-    <formly-form model="vm.user" fields="vm.fields" form="vm.form"></formly-form>
+  <form name="vm.form" ng-if="show">
+    <formly-form model="vm.user" fields="vm.fields" form="vm.form" options="vm.formOptions"></formly-form>
   </form>
 
   <h1>User</h1>
