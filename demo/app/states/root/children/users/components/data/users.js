@@ -34,6 +34,13 @@ export default [
     description: require('./users-data/duckiedocs/description.md')
   },
   {
+    name: 'WeInvoiceIT',
+    slug: 'weinvoiceit',
+    logo: require('./users-data/no-logo.png'),
+    link: 'http://www.weinvoiceit.com/',
+    description: require('./users-data/duckiedocs/description.md')
+  },
+  {
     name: 'Add Your Project!',
     slug: 'new',
     logo: require('./users-data/new/logo.png'),
